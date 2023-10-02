@@ -1,0 +1,86 @@
+@font-face {
+  font-family: "PatrickHand";
+  src: url("fonts/PatrickHand-Regular.ttf") format("truetype");
+}
+
+body {
+  min-height: 100vh;
+  background-image: linear-gradient(
+    to right top,
+    #8d81f2,
+    #9d9cf8,
+    #b1b7fc,
+    #c9d0fe,
+    #e4e9fe
+  );
+}
+* {
+  font-size: 1vw;
+  font-family: "PatrickHand", sans-serif;
+}
+.mainColor {
+  color: #4e4fe1;
+}
+.icons {
+  width: 6vw;
+}
+#forecast h1 {
+  font-size: 12vw;
+}
+#forecast svg {
+  fill: #f0effc;
+}
+#statistics {
+  max-width: 25vw;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+#today {
+  max-width: 25vw;
+}
+
+#location {
+  max-width: 25vw;
+}
+#location input {
+  background-color: transparent;
+  border: none;
+}
+#location input:focus {
+  outline: none;
+}
+
+#forecast {
+  max-width: 25vw;
+}
+
+#comingForecast .col {
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2.7px);
+}
+
+@media (max-width: 992px) {
+  #weatherIcon {
+    position: absolute;
+    margin-top: 10%;
+    left: 50%;
+  }
+  .mainBox {
+    margin: 0 10%;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+  }
+}
+
+@media (min-width: 993px) {
+  .mainBox {
+    margin: 0;
+  }
+  #weatherIcon {
+    position: absolute;
+    margin-top: 10%;
+    left: 14%;
+  }
+}
