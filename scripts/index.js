@@ -81,7 +81,7 @@ async function getLocation() {
             resolve();
           },
           async function (error) {
-            console.error(
+            console.log(
               "An error occurred while accessing approximate location:",
               error,
             );
@@ -210,9 +210,9 @@ function weatherName(weatherCode) {
 function formattaData(data) {
   const lingua = navigator.language;
   const opzioniData = {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   };
 
   return new Intl.DateTimeFormat(lingua, opzioniData).format(new Date(data));
@@ -225,7 +225,7 @@ function updateDom(days, city, displayDay = 0) {
   const todayExtended = document.getElementById("today");
   const todayH6 = todayExtended.querySelector("h6");
   locationInput.value = city;
-  const formattedDate = formattaData(days[displayDay].date)
+  const formattedDate = formattaData(days[displayDay].date);
   todayH6.innerHTML = formattedDate;
 
   const currentHour = new Date().getHours();
@@ -410,7 +410,6 @@ function hideKeyboard(element) {
   }, 100);
 }
 
-
 (async function main(data = "", city = "") {
   if (data === "") {
     [data, city] = await getData();
@@ -446,7 +445,7 @@ function hideKeyboard(element) {
   };
   locationInput.addEventListener("keydown", async function (event) {
     if (event.key === "Enter") {
-      console.log(document.getElementById("location").querySelector("input"))
+      console.log(document.getElementById("location").querySelector("input"));
       hideKeyboard(document.getElementById("location").querySelector("input"));
       let cityValue = locationInput.value;
       const coordinates = await getCityCoordinates(cityValue); // Ottengo le coordinate come oggetto
