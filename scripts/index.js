@@ -70,39 +70,62 @@ async function getLocation() {
   let long = "";
 
   async function getApproximateLocation() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
-          function (position) {
+          async function (position) {
             lat = position.coords.latitude.toFixed(2);
             long = position.coords.longitude.toFixed(2);
 
             // You can use lat and long for approximate purposes.
             resolve();
           },
-          function (error) {
+          async function (error) {
             console.error(
               "An error occurred while accessing approximate location:",
               error,
             );
-            reject(error);
+
+            // Try to get approximate location based on client's country using ipinfo.io
+            try {
+              const response = await fetch("https://ipinfo.io/json");
+              const data = await response.json();
+              const [capitalLat, capitalLong] = data.loc.split(",");
+              lat = capitalLat;
+              long = capitalLong;
+              resolve();
+            } catch (err) {
+              console.error("Error while fetching approximate location:", err);
+              reject(err);
+            }
           },
           { maximumAge: 60000 },
         );
       } else {
         console.log("Your browser does not support approximate geolocation.");
-        reject("Geolocation not supported");
+        // Try to get approximate location based on client's country using ipinfo.io
+        try {
+          const response = await fetch("https://ipinfo.io/json");
+          const data = await response.json();
+          const [capitalLat, capitalLong] = data.loc.split(",");
+          lat = capitalLat;
+          long = capitalLong;
+          resolve();
+        } catch (err) {
+          console.error("Error while fetching approximate location:", err);
+          reject("Geolocation not supported");
+        }
       }
     });
   }
 
   await getApproximateLocation();
+
   let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`;
 
   try {
     const response = await fetch(url);
     const data = await response.json();
-
     if (data.display_name) {
       let city = data.display_name;
       return [lat, long, city];
@@ -184,33 +207,47 @@ function weatherName(weatherCode) {
   }
 }
 
-function updateDom(days, city) {
-  console.log(city);
+function formattaData(data) {
+  const lingua = navigator.language;
+  const opzioniData = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+  };
+
+  return new Intl.DateTimeFormat(lingua, opzioniData).format(new Date(data));
+}
+
+function updateDom(days, city, displayDay = 0) {
+  //console.log(days);
   const locationName = document.getElementById("location");
   const locationInput = locationName.querySelector("input");
   const todayExtended = document.getElementById("today");
   const todayH6 = todayExtended.querySelector("h6");
   locationInput.value = city;
-  todayH6.innerHTML = days[0].date;
+  const formattedDate = formattaData(days[displayDay].date)
+  todayH6.innerHTML = formattedDate;
 
   const currentHour = new Date().getHours();
-  console.log(currentHour);
   const forecast = document.getElementById("forecast");
   const forecastH1 = forecast.querySelector("h1");
-  forecastH1.innerHTML = days[0].hoursArray[currentHour].temperature + "°";
+  forecastH1.innerHTML =
+    days[displayDay].hoursArray[currentHour].temperature + "°";
   const humidity = document.querySelector("#humidity");
-  humidity.innerHTML = days[0].hoursArray[currentHour].humidity + " %";
+  humidity.innerHTML = days[displayDay].hoursArray[currentHour].humidity + "%";
   const rainProbability = document.querySelector("#precipitation");
   rainProbability.innerHTML =
-    days[0].hoursArray[currentHour].rainProbability + " %";
+    days[displayDay].hoursArray[currentHour].rainProbability + "%";
   const windSpeed = document.querySelector("#windSpeed");
-  windSpeed.innerHTML = days[0].hoursArray[currentHour].windSpeed + " km/h";
-  const weatherCode = days[0].hoursArray[currentHour].weatherCode;
+  windSpeed.innerHTML =
+    days[displayDay].hoursArray[currentHour].windSpeed + "km/h";
+  const weatherCode = days[displayDay].hoursArray[currentHour].weatherCode;
   let weatherIcon = weatherName(weatherCode);
   document.querySelector("#weatherIcon").innerHTML = weatherIcon;
   const comingForecast = document.querySelector("#comingForecast");
   comingForecast.innerHTML = "";
   const nextDays = days.slice(1);
+  let iterator = 1;
   nextDays.forEach((day) => {
     let maxTemp = day.maxTemp();
     let minTemp = day.minTemp();
@@ -228,8 +265,10 @@ function updateDom(days, city) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dayName = days[date.getDay()];
     const div = document.createElement("div");
-    div.className = "col m-1 text-center col-1";
+    div.className = "col m-1 text-center col-auto standardDiv";
     const pDay = document.createElement("p");
+    pDay.id = iterator;
+    iterator++;
     pDay.className = "mainColor fw-bold mt-3";
     pDay.textContent = dayName.toUpperCase() + " " + day.date.substring(8);
     const icon = document.createElement("i");
@@ -248,6 +287,74 @@ function updateDom(days, city) {
 
     comingForecast.appendChild(div);
   });
+  lineCoords(days[displayDay].hoursArray);
+}
+
+function setup() {
+  const body = document.querySelector("body");
+  body.style.filter = "none";
+  const elem = document.getElementById("statistics");
+  if (elem) {
+    const width = elem.offsetWidth;
+    const height = elem.offsetHeight;
+    const bodyWidth = document.body.offsetWidth;
+    let canvas = createCanvas(
+      bodyWidth > 992 ? width * 2 : width,
+      bodyWidth > 992 ? height : height / 2,
+    );
+    console.log(width, width > 900 ? width * 2 : width);
+    canvas.parent("canvas-container");
+    translate(0, width > 200 ? height / 2 : height / 4); // Trasforma l'origine nell'angolo in basso a sinistra
+    scale(1, -1); // Inverti l'asse Y
+  } else {
+    console.log("waiting DOM...");
+  }
+}
+function draw() {
+  clear();
+  if (coordArray.length > 0) {
+    const width = document.getElementById("canvas-container").offsetWidth;
+    let height = document.getElementById("canvas-container").offsetHeight;
+    translate(0, height);
+    scale(1, -1);
+    iteration = width / 12;
+    const maxVal = height * 0.7;
+    // Calcola il fattore di scala in base al valore massimo
+    const scaleFactor = maxVal / Math.max(...coordArray.map((item) => item[0]));
+    // Applica il fattore di scala a ciascun elemento nella prima posizione e arrotonda a 0 decimali
+    coordArray.forEach((item) => {
+      item[0] = Math.round(item[0] * scaleFactor);
+    });
+    noFill();
+    stroke(255);
+
+    beginShape();
+    let x = 0;
+    const textSizeFactor = width * 0.06; // Puoi regolare questo fattore a tuo piacimento
+    const textSizeValue = Math.min(textSizeFactor, 15); // Imposta un valore massimo di 20 per la dimensione del testo
+    coordArray.forEach((e) => {
+      vertex(x, e[0]);
+      push();
+      translate(x, e[0]);
+      scale(1, -1); // Trasforma il testo per correggere l'orientamento
+      textSize(textSizeValue); // Imposta la dimensione del testo a 12 pixel
+      noStroke();
+      fill(255, 255, 255);
+      text(
+        `${e[2].match(/(\d+):(\d+)/)[1]} ${
+          e[1] == 1 ? "\n☀️" : e[1] == 45 ? "\n☁️" : "\n🌧"
+        }`,
+        0,
+        -5,
+      );
+      pop();
+      x += iteration;
+    });
+    vertex(x, coordArray[coordArray.length - 1][0]);
+    endShape();
+  } else {
+    console.log("EMPTY");
+  }
 }
 
 async function getCityCoordinates(cityName) {
@@ -270,6 +377,39 @@ async function getCityCoordinates(cityName) {
     return false;
   }
 }
+
+let coordArray = [];
+function lineCoords(arr) {
+  const array = arr.filter((element, index) => index % 2 === 0);
+  //console.log(array);
+  coordArray = array.map((e) => {
+    let weather;
+    if (e.rainProbability >= 50) {
+      //rain
+      weather = 61;
+    } else if (e.rainProbability < 50 && e.humidity >= 70) {
+      //cloudy
+      weather = 45;
+    } else {
+      //sunny
+      weather = 1;
+    }
+    return [e.temperature * 5, weather, e.time];
+  });
+  return coordArray;
+}
+
+function hideKeyboard(element) {
+  element.setAttribute("readonly", "readonly"); // Force keyboard to hide on input field.
+  element.setAttribute("disabled", "true"); // Force keyboard to hide on textarea field.
+  setTimeout(function () {
+    element.blur(); //actually close the keyboard
+    // Remove readonly attribute after keyboard is hidden.
+    element.removeAttribute("readonly");
+    element.removeAttribute("disabled");
+  }, 100);
+}
+
 
 (async function main(data = "", city = "") {
   if (data === "") {
@@ -306,6 +446,8 @@ async function getCityCoordinates(cityName) {
   };
   locationInput.addEventListener("keydown", async function (event) {
     if (event.key === "Enter") {
+      console.log(document.getElementById("location").querySelector("input"))
+      hideKeyboard(document.getElementById("location").querySelector("input"));
       let cityValue = locationInput.value;
       const coordinates = await getCityCoordinates(cityValue); // Ottengo le coordinate come oggetto
       if (coordinates) {
@@ -320,5 +462,29 @@ async function getCityCoordinates(cityName) {
         locationInput.style.color = "red";
       }
     }
+  });
+  // Seleziona tutti gli elementi <div> con ID "comingForecast"
+  let container = document.getElementById("comingForecast");
+
+  container.addEventListener("click", function (event) {
+    event.stopPropagation();
+    let clickedDiv = event.target.closest("div");
+    if (clickedDiv) {
+      let clickedP = clickedDiv.querySelector("p");
+      if (clickedP) {
+        let id = clickedP.id;
+        updateDom(days, city, id);
+        // Aggiungi la classe al div selezionato
+        const elementoP = document.querySelector('p[id="' + id + '"]');
+        clickedDiv = elementoP.closest("div");
+        clickedDiv.classList.remove("standardDiv");
+        clickedDiv.classList.add("selectedDiv");
+      }
+    }
+  });
+
+  document.getElementById("today").addEventListener("click", function (event) {
+    event.stopPropagation();
+    updateDom(days, city);
   });
 })();

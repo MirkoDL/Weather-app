@@ -1,3 +1,13 @@
+body {
+  filter: blur(
+    15px
+  ); /* Imposta il livello di sfocatura desiderato, ad esempio 5px */
+  transition: filter 0.5s; /* Aggiunge una transizione per un effetto più fluido */
+}
+#loading {
+  filter: none !important;
+}
+
 @font-face {
   font-family: "PatrickHand";
   src: url("fonts/PatrickHand-Regular.ttf") format("truetype");
@@ -15,66 +25,111 @@ body {
   );
 }
 * {
-  font-size: 1vw;
   font-family: "PatrickHand", sans-serif;
 }
 .mainColor {
   color: #4e4fe1;
 }
-.icons {
-  width: 6vw;
-}
-#forecast h1 {
-  font-size: 12vw;
-}
-#forecast svg {
-  fill: #f0effc;
-}
-#statistics {
-  max-width: 25vw;
-  border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.6);
-}
 
-#today {
-  max-width: 25vw;
-}
-
-#location {
-  max-width: 25vw;
-}
-#location input {
-  background-color: transparent;
-  border: none;
-}
-#location input:focus {
-  outline: none;
-}
-
-#forecast {
-  max-width: 25vw;
-}
-
-#comingForecast .col {
-  border-radius: 15px;
+.standardDiv {
   background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2.7px);
+}
+.standardDiv p {
+  margin: 0;
+}
+.standardDiv i {
+  margin: 0;
+}
+.selectedDiv i {
+  margin: 5px;
+}
+.selectedDiv p {
+  margin: 5px;
+}
+
+.selectedDiv {
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(2.7px);
 }
 
 @media (max-width: 992px) {
+  * {
+    font-size: 5vw;
+  }
+  #forecast h1 {
+    font-size: 35vw !important;
+  }
   #weatherIcon {
     position: absolute;
-    margin-top: 10%;
-    left: 50%;
+    margin-top: 30%;
+    left: 55%;
+  }
+  #weatherIcon svg{
+    height: 18vw;
   }
   .mainBox {
-    margin: 0 10%;
+    margin: 2%;
     background-color: rgba(255, 255, 255, 0.4);
     border-radius: 15px;
+  }
+
+  .icons {
+    width: 5vw;
+  }
+  #forecast h1 {
+    font-size: 12vw;
+  }
+  #forecast svg {
+    fill: #f0effc;
+  }
+  #statistics {
+    max-width: 80vw;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+  #today {
+    max-width: 80vw;
+  }
+  #canvas-container {
+    padding: 0;
+    max-width: 80vw;
+  }
+
+  #location {
+    max-width: 80vw;
+  }
+  #location input {
+    background-color: transparent;
+    border: none;
+  }
+  #location input:focus {
+    outline: none;
+  }
+
+  #forecast {
+    max-width: 40vw;
+  }
+
+  #comingForecast .col {
+    border-radius: 15px;
+  }
+  #comingForecast::-webkit-scrollbar {
+    display: none;
+  }
+  #canvas-container::-webkit-scrollbar {
+    display: none;
+  }
+  .stats {
+    display: none;
   }
 }
 
 @media (min-width: 993px) {
+  * {
+    font-size: 0.8vw;
+  }
+
   .mainBox {
     margin: 0;
   }
@@ -82,5 +137,47 @@ body {
     position: absolute;
     margin-top: 10%;
     left: 14%;
+  }
+
+  .icons {
+    width: 6vw;
+  }
+  #forecast h1 {
+    font-size: 12vw;
+  }
+  #forecast svg {
+    fill: #f0effc;
+  }
+  #statistics {
+    max-width: 25vw;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+  #line {
+    border: 2px solid black;
+    max-height: 4vh;
+  }
+  #today {
+    max-width: 25vw;
+  }
+
+  #location {
+    max-width: 25vw;
+  }
+  #location input {
+    background-color: transparent;
+    border: none;
+  }
+  #location input:focus {
+    outline: none;
+  }
+
+  #forecast {
+    max-width: 25vw;
+  }
+
+  #comingForecast .col {
+    border-radius: 15px;
+    min-width: 8vw;
   }
 }
