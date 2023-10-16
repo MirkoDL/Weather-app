@@ -36,18 +36,6 @@ body {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(2.7px);
 }
-.standardDiv p {
-  margin: 0;
-}
-.standardDiv i {
-  margin: 0;
-}
-.selectedDiv i {
-  margin: 5px;
-}
-.selectedDiv p {
-  margin: 5px;
-}
 
 .selectedDiv {
   background: rgba(255, 255, 255, 0.7);
@@ -66,7 +54,7 @@ body {
     margin-top: 30%;
     left: 55%;
   }
-  #weatherIcon svg{
+  #weatherIcon svg {
     height: 18vw;
   }
   .mainBox {
@@ -90,10 +78,6 @@ body {
     background-color: rgba(255, 255, 255, 0.6);
   }
   #today {
-    max-width: 80vw;
-  }
-  #canvas-container {
-    padding: 0;
     max-width: 80vw;
   }
 
@@ -180,5 +164,8 @@ body {
   #comingForecast .col {
     border-radius: 15px;
     min-width: 8vw;
+  }
+  #dayStats {
+    max-width: 50vw;
   }
 }
