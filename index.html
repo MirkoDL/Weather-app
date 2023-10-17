@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Weather app</title>
+    <link rel="shortcut icon" type="image/png" href="styles/img/siteIcon.png">
     <link rel="stylesheet" href="styles/index.css">
     <link href="scripts/ext//bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous" async>
     <meta name="description" content="Weather app based on user location or preferences">
@@ -48,15 +49,17 @@
           <p class="mainColor fw-light stats">Wind speed</p>
         </div>
       </div>
-      <div class="row m-auto mt-3 d-flex align-items-center justify-content-center justify-content-lg-start" id="dayStats">
-        <div id="canvas-container" class="col-auto text-center overflow-auto"></div>
+      <div class="row m-auto mt-3 d-flex align-items-center justify-content-center ms-lg-0" id="dayStats">
+        <canvas id="canvas-container" class="col-auto text-center"></canvas>
       </div>
-      <div class="row flex-nowrap overflow-auto m-auto align-items-center justify-content-center justify-content-lg-start m-2" id="comingForecast">
+      <div class="row flex-nowrap overflow-auto m-auto m-2 mt-4" id="comingForecast">
       </div>
     </div>
     </div>
+    <script src="scripts/ext/chart.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation" async></script>
     <script src="scripts/index.js" async></script>
     <script src="https://kit.fontawesome.com/f9d5282764.js" crossorigin="anonymous" async></script>
-    <script src="scripts/ext/p5.min.js" async></script>
+    
   </body>
 </html>

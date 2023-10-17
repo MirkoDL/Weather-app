@@ -126,8 +126,9 @@ async function getLocation() {
   try {
     const response = await fetch(url);
     const data = await response.json();
+    console.log(data);
     if (data.display_name) {
-      let city = data.display_name;
+      let city = data.display_name.split(",").slice(2).join(",");
       return [lat, long, city];
     } else if (data.address) {
       let city = data.address.municipality;
@@ -284,77 +285,10 @@ function updateDom(days, city, displayDay = 0) {
     div.appendChild(icon);
     div.appendChild(pMaxTemp);
     div.appendChild(pMinTemp);
-
     comingForecast.appendChild(div);
   });
   lineCoords(days[displayDay].hoursArray);
-}
-
-function setup() {
-  const body = document.querySelector("body");
-  body.style.filter = "none";
-  const elem = document.getElementById("statistics");
-  if (elem) {
-    const width = elem.offsetWidth;
-    const height = elem.offsetHeight;
-    const bodyWidth = document.body.offsetWidth;
-    let canvas = createCanvas(
-      bodyWidth > 992 ? width * 2 : width,
-      bodyWidth > 992 ? height : height / 2,
-    );
-    console.log(width, width > 900 ? width * 2 : width);
-    canvas.parent("canvas-container");
-    translate(0, width > 200 ? height / 2 : height / 4); // Trasforma l'origine nell'angolo in basso a sinistra
-    scale(1, -1); // Inverti l'asse Y
-  } else {
-    console.log("waiting DOM...");
-  }
-}
-function draw() {
-  clear();
-  if (coordArray.length > 0) {
-    const width = document.getElementById("canvas-container").offsetWidth;
-    let height = document.getElementById("canvas-container").offsetHeight;
-    translate(0, height);
-    scale(1, -1);
-    iteration = width / 12;
-    const maxVal = height * 0.7;
-    // Calcola il fattore di scala in base al valore massimo
-    const scaleFactor = maxVal / Math.max(...coordArray.map((item) => item[0]));
-    // Applica il fattore di scala a ciascun elemento nella prima posizione e arrotonda a 0 decimali
-    coordArray.forEach((item) => {
-      item[0] = Math.round(item[0] * scaleFactor);
-    });
-    noFill();
-    stroke(255);
-
-    beginShape();
-    let x = 0;
-    const textSizeFactor = width * 0.06; // Puoi regolare questo fattore a tuo piacimento
-    const textSizeValue = Math.min(textSizeFactor, 15); // Imposta un valore massimo di 20 per la dimensione del testo
-    coordArray.forEach((e) => {
-      vertex(x, e[0]);
-      push();
-      translate(x, e[0]);
-      scale(1, -1); // Trasforma il testo per correggere l'orientamento
-      textSize(textSizeValue); // Imposta la dimensione del testo a 12 pixel
-      noStroke();
-      fill(255, 255, 255);
-      text(
-        `${e[2].match(/(\d+):(\d+)/)[1]} ${
-          e[1] == 1 ? "\n☀️" : e[1] == 45 ? "\n☁️" : "\n🌧"
-        }`,
-        0,
-        -5,
-      );
-      pop();
-      x += iteration;
-    });
-    vertex(x, coordArray[coordArray.length - 1][0]);
-    endShape();
-  } else {
-    console.log("EMPTY");
-  }
+  draw();
 }
 
 async function getCityCoordinates(cityName) {
@@ -363,7 +297,7 @@ async function getCityCoordinates(cityName) {
       `https://nominatim.openstreetmap.org/search?format=json&q=${cityName}`,
     );
     const data = await response.json();
-
+    console.log(data);
     if (data.length > 0) {
       const location = data[0];
       const lat = parseFloat(location.lat);
@@ -382,6 +316,7 @@ let coordArray = [];
 function lineCoords(arr) {
   const array = arr.filter((element, index) => index % 2 === 0);
   //console.log(array);
+  array.push(arr[arr.length - 1]);
   coordArray = array.map((e) => {
     let weather;
     if (e.rainProbability >= 50) {
@@ -394,7 +329,8 @@ function lineCoords(arr) {
       //sunny
       weather = 1;
     }
-    return [e.temperature * 5, weather, e.time];
+    //return [e.temperature * 5, weather, e.time];
+    return [e.temperature, weather, e.time];
   });
   return coordArray;
 }
@@ -408,6 +344,95 @@ function hideKeyboard(element) {
     element.removeAttribute("readonly");
     element.removeAttribute("disabled");
   }, 100);
+}
+
+function draw() {
+  const canvasMaxHeigth = Math.max(...coordArray.map((item) => item[0]));
+  let canvasContainer = document.getElementById("canvas-container");
+  canvasContainer.parentNode.removeChild(canvasContainer);
+  // Crea un nuovo canvas
+  let newCanvas = document.createElement("canvas");
+  newCanvas.id = "canvas-container";
+  newCanvas.className = "col-auto text-center";
+  // Aggiungi il nuovo canvas al body o ad un altro elemento desiderato
+  document.getElementById("dayStats").appendChild(newCanvas);
+  const annotations = coordArray.map((e, index) => {
+    let content = e[1] == 1 ? "☀️" : e[1] == 45 ? "☁️" : "🌧️";
+    let x = (function () {
+      if (index == 0) {
+        return index + 0.15;
+      } else if (index == coordArray.length - 1) {
+        return index - 0.15;
+      } else {
+        return index;
+      }
+    })();
+    let y = (function () {
+      if (e[0] + 1 >= canvasMaxHeigth) {
+        return e[0] - 0.5;
+      } else {
+        return e[0] + 0.5;
+      }
+    })();
+    return { type: "label", xValue: x, yValue: y, content: content };
+  });
+
+  document.querySelector("body").style.filter = "none";
+
+  let ctx = document.getElementById("canvas-container").getContext("2d");
+  let data = {
+    labels: coordArray.map((e) => e[2]),
+    datasets: [
+      {
+        label: "Grafico a Linee",
+        data: coordArray.map((e) => e[0]), // Valori dei punti
+        borderColor: "blue", // Colore della linea
+        fill: false,
+        tension: 0.3, // Non riempire l'area sotto la linea
+      },
+    ],
+  };
+
+  // Definisci le opzioni del grafico
+  let options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        enabled: false, // <-- this option disables tooltips
+      },
+      legend: {
+        display: false,
+      },
+      annotation: {
+        annotations: annotations,
+      },
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: function (value, index, values) {
+            return value + "°"; // Aggiungi "°" dopo ogni valore sull'asse y
+          },
+        },
+        grid: {
+          display: false, // Rimuovi le linee di sfondo sull'asse y
+        },
+      },
+      x: {
+        grid: {
+          display: false, // Rimuovi le linee di sfondo sull'asse x
+        },
+      },
+    },
+  };
+
+  // Crea il grafico a linee
+  let lineChart = new Chart(ctx, {
+    type: "line",
+    data: data,
+    options: options,
+  });
 }
 
 (async function main(data = "", city = "") {
@@ -445,7 +470,6 @@ function hideKeyboard(element) {
   };
   locationInput.addEventListener("keydown", async function (event) {
     if (event.key === "Enter") {
-      console.log(document.getElementById("location").querySelector("input"));
       hideKeyboard(document.getElementById("location").querySelector("input"));
       let cityValue = locationInput.value;
       const coordinates = await getCityCoordinates(cityValue); // Ottengo le coordinate come oggetto
