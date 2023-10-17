@@ -47,27 +47,33 @@ body {
     font-size: 5vw;
   }
   #forecast h1 {
-    font-size: 35vw !important;
+    font-size: 35vw;
+    margin: 0;
   }
   #weatherIcon {
     position: absolute;
-    margin-top: 30%;
-    left: 55%;
+    margin-top: 26%;
+    left: 53%;
   }
   #weatherIcon svg {
     height: 18vw;
+    stroke: #4e4fe1;
+    stroke-width: 3px;
   }
   .mainBox {
     margin: 2%;
     background-color: rgba(255, 255, 255, 0.4);
     border-radius: 15px;
+    border: 1px solid white;
+  }
+  .box {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    border: 1px solid white;
   }
 
   .icons {
     width: 5vw;
-  }
-  #forecast h1 {
-    font-size: 12vw;
   }
   #forecast svg {
     fill: #f0effc;
