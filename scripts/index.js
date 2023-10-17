@@ -126,7 +126,7 @@ async function getLocation() {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    console.log(data);
+    //console.log(data);
     if (data.display_name) {
       let city = data.display_name.split(",").slice(2).join(",");
       return [lat, long, city];
@@ -266,25 +266,25 @@ function updateDom(days, city, displayDay = 0) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dayName = days[date.getDay()];
     const div = document.createElement("div");
-    div.className = "col m-1 text-center col-auto standardDiv";
+    div.className = "col ms-1 text-center col-auto standardDiv";
     const pDay = document.createElement("p");
     pDay.id = iterator;
     iterator++;
-    pDay.className = "mainColor fw-bold mt-3";
+    pDay.className = "mainColor fw-bold";
     pDay.textContent = dayName.toUpperCase() + " " + day.date.substring(8);
     const icon = document.createElement("i");
-    icon.className = `${weatherIcon()} fa-xl`;
+    icon.className = `${weatherIcon()} fa-xl `;
     icon.style.color = "#5759e7";
     const pMaxTemp = document.createElement("p");
-    pMaxTemp.className = "mainColor fw-bold mt-3";
-    pMaxTemp.textContent = maxTemp + "°";
+    pMaxTemp.className = "mainColor fw-bold mt-2";
+    pMaxTemp.textContent = maxTemp + "° / " + minTemp + "°";
     const pMinTemp = document.createElement("p");
     pMinTemp.className = "mainColor fw-light";
     pMinTemp.textContent = minTemp + "°";
     div.appendChild(pDay);
     div.appendChild(icon);
     div.appendChild(pMaxTemp);
-    div.appendChild(pMinTemp);
+    //div.appendChild(pMinTemp);
     comingForecast.appendChild(div);
   });
   lineCoords(days[displayDay].hoursArray);
@@ -297,7 +297,7 @@ async function getCityCoordinates(cityName) {
       `https://nominatim.openstreetmap.org/search?format=json&q=${cityName}`,
     );
     const data = await response.json();
-    console.log(data);
+    //console.log(data);
     if (data.length > 0) {
       const location = data[0];
       const lat = parseFloat(location.lat);
